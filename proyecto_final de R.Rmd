@@ -1,0 +1,142 @@
+---
+title: "Ejercicio final"
+author: "Zhida Xu"
+date: "22/11/2019"
+output: html_document
+---
+
+# Proyecto final de R
+
+## Comparación entre dos páginas de Expresiones Regulares. 
+
+* [Expresiones regulares de Diego Calvo]("http://www.diegocalvo.es/expresiones-regulares-en-r/")
+
+* [Expresiones regulares de r-studio ]("https://www.r-studio.com/es/Unformat_Help/regularexpressions.html")
+
+### Expresiones regulares en R de Diego Calvo (Ejemplos)
+
+#### SUBSTRING - Seleccionar un substring 
+```
+texto <- "¡Hola Mundo!"
+substring(texto, 7,11)
+[1] "Mundo"
+substring(texto, 7, 11) <- "Pacos"  #Sustituye la cadena del substring por la asignada
+[1] "¡Hola Pacos!"
+```
+#### NCHAR – Longitud de la cadena
+```
+nchar(texto)
+ [1] 12
+```
+#### PASTE – Concatenar cadenas
+```
+paste("¡Adiós", "Mundo!")
+ [1] "¡Adiós Mundo!"
+```
+```
+paste("¡Adiós", "Mundo!", sep="_")
+ [1] "¡Adiós_Mundo!"
+ ```
+...
+
+### Expresiones regulares de R-studio (Ejemplos)
+
+|            |            |
+|------------|------------|
+|.|Carácter comodín: cualquier carácter|
+|*|Repetir: cero o más ocurrencias de carácter o clase anteriores|
+|^|Posición en la línea: comienzo de la línea|
+|\$|Posición en la línea: fin de la línea|
+|[class]|Clase de carácter: cualquier carácter de la serie|
+|[^class]|Clase inversa: cualquier carácter que no esté en la serie|
+|[x-y]|Intervalo: cualquier carácter que esté dentro del intervalo especificado|
+|\\x|Escape: uso literal de un metacarácter|
+|\<xyz|Posición de palabra: principio de palabra|
+|xyz\>|Posición de palabra: fin de palabra|
+
+
+### Conclusión de Expresiones Regulares
+
+El tutorial de Diego Calvo ofrece ejemplos de expresiones regulares, con los que puedes entender con rapidez cómo usarlos. Sin embargo, la de R-studio, a parte de que su página es muy sosa, no da ejemplos. Además,la página de Diego Calvo está hecha con un Rmarkdown y está claro lo que te enseña. En contrario, la de R-studio, carece de claridad,y sus letras son muy pequeñas. 
+
+## Comparación entre dos páginas de Rmarkdown
+
+* [Rmarkdown-Joedicastro]("https://joedicastro.com/pages/markdown.html)
+
+* [Rmarkdown-maxima]("https://www.maximaformacion.es/blog-dat/rmarkdown-para-principiantes/")
+
+Entre las dos páginas de Rmarkdown, en mi opinión, la primera de ellas es mejor, porque está mejor estructurado y te ofrece tanto tutoriales básicos e intermedios, algo que en la segunda página no te ofrece, y además, como muchas otras páginas, la segunda página solo te enseña las cosas básicas, cuyo contenido no me proporciona mucho avance en este ámbito.
+
+```{r setup, include=FALSE}
+library(rvest)
+library(ggplot2)
+library(reshape2)
+library(rbokeh)
+library(knitr)
+library(flexdashboard)
+library(kableExtra)
+```
+
+## Tabla de ciberbullying a nivel mundial
+
+```{r,echo=FALSE,message=FALSE}
+
+url<- ("https://www.comparitech.com/internet-providers/cyberbullying-statistics/")
+tmp <- read_html(url) 
+tmp <- html_nodes(tmp,"table") # extraer nodos de tipo table
+tmp<-html_table(tmp,fill=T)
+ciberbullying<-tmp[[1]]
+ciberbullying$`2016`<-as.numeric(gsub("--","0",ciberbullying$`2016`))
+ciberbullying$`2011`<-as.numeric(gsub("--","0",ciberbullying$`2011`))
+kable(ciberbullying) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+```
+
+Es una tabla de Ciberbullying a nivel mundial, donde en la columna primera muestra los países que tenga los datos registrados, y en los demás columnas nos proporcionan el porcentaje de familias que tenga afectados de ciberbullying  en los años 2018, 2016 y 2011.
+
+Se observa que India en 2018 ha obtenido más afectados, con un 37% de familias afectadas por ciberbullyingl, y Brasil es el primero del ranking en 2016, y luego, en 2011 Indica vuelve a tomar la posición primera.
+
+
+## Ggplot de la evolución de ciberbullying 
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+
+ciberbullying<-melt(ciberbullying)
+ciberbullying$variable<-as.Date(ciberbullying$variable,"%Y")
+ggplot(ciberbullying, aes(x = variable, y=value,color=Country,)) + 
+  geom_point() + geom_smooth() +
+  facet_wrap(~ Country)+theme(legend.position = "none")+theme(axis.text.x=element_text(angle=90, hjust=1))+labs(x = "Años",y = "Porcentaje de ciberbullying (%)")
+
+```
+
+Las gráficas muestran el porcentaje de los padres cuyos hijos han experimentado ciberbullying  enre 2011-2018. Se observa que en casi todos los países el ciberbullying ha crecido en comparación con los años anteriores. Sin embargo, se observa que Estados Unidos ha tenido una bajada en 2018.
+
+
+## Gráfica de la evolución de intereses
+
+```{r,message=FALSE,echo=FALSE}
+tmp <- read_html("https://es.euribor-rates.eu/tipo-de-interes-del-BCE.asp") 
+tmp <- html_nodes(tmp,"table") 
+tmp<-html_table(tmp,fill = T,dec = ",",header=T)
+interes<-tmp[[1]]
+colnames(interes)[1]<-c("periodo")
+colnames(interes)[2]<-c("porcentaje")
+interes$porcentaje<-gsub("%","",interes$porcentaje)
+interes$periodo<-as.Date.character(interes$periodo,"%d/%m/%Y")
+interes$porcentaje<-as.numeric(gsub(",","\\.",interes$porcentaje))
+ggplot(interes, aes(x = periodo, y = porcentaje,fill = "#FF6666")) + geom_col()+theme(legend.position = "none")
+
+```
+
+La gráfica representa la evolución de los tipos de intereses del Banco Central Europeo entre 2011-2016. Se observa que los tipos han ido bajando hasta llegar su mínimo en el gráfico, que corresponde al año 2016, alcanzando casi a 0. Todo ello, se debe al impacto del Crisis, que para fomentar las inversiones, el banco tuvo que bajarse en interes. 
+
+## Gráfica dinámica de ciberbullying
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+
+figure(width = NULL, height = NULL) %>%
+  ly_points(variable, value, data = ciberbullying, color = Country)
+```
+
+La última gráfica es una gráfica de flexdashboard de ciberbullying, con datos acumulados en una faceta. En la que cada país se distingue por el color, y se puede ampliarse, moverse por el ratón.
